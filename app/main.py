@@ -80,6 +80,25 @@ def get_result(
     return data
 
 
+@app.post("/debug-pages")
+async def debug_pages(
+    file: UploadFile = File(...),
+    api_key: str = Depends(require_api_key),
+):
+    import fitz
+    pdf_bytes = await file.read()
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    pages = []
+    for i, page in enumerate(doc):
+        text = page.get_text()
+        pages.append({
+            "page": i + 1,
+            "chars": len(text),
+            "preview": text[:200].replace("\n", " "),
+        })
+    return {"total_pages": len(doc), "pages": pages}
+
+
 @app.post("/debug-text")
 async def debug_text(
     file: UploadFile = File(...),
