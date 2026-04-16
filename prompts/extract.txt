@@ -1,19 +1,34 @@
-You are a legal contract analyst. Extract the following information from the contract text provided and return ONLY valid JSON — no explanation, no markdown, no extra fields.
+You are a legal contract analyst. The document may contain a main contract AND one or more appendices or orders (přílohy, objednávky). Extract data from ALL parts of the document — not just the main body.
+
+Return ONLY valid JSON — no explanation, no markdown, no extra fields.
 
 {
-  "parties": ["list of all named parties in the contract"],
-  "contract_value": "total value with currency, e.g. '1 200 000 CZK' or null",
-  "start_date": "YYYY-MM-DD or null",
-  "end_date": "YYYY-MM-DD or null",
-  "payment_terms": "short description, e.g. 'Net 30 days' or null",
+  "parties": ["list of all named parties — including Dodavatel, Subdodavatel, and Objednatel from any appendix"],
+  "contract_value": "rate or total value with currency, e.g. '2 000 CZK/MD' or '1 200 000 CZK' or null — check appendices and orders if not in main body",
+  "start_date": "YYYY-MM-DD or null — check appendices and orders if not in main body",
+  "end_date": "YYYY-MM-DD or null — check appendices and orders if not in main body",
+  "payment_terms": "short description including due date, e.g. 'Monthly invoicing, Net 45 days' or null — check appendices and orders",
   "governing_law": "jurisdiction, e.g. 'Czech Republic' or null",
+  "orders": [
+    {
+      "order_number": "e.g. 'Objednávka č. 1'",
+      "client": "Objednatel name from this order or null",
+      "role": "position/role of subdodavatel, e.g. 'IT Support (part-time)' or null",
+      "rate": "e.g. '2 000 CZK/MD' or null",
+      "start_date": "YYYY-MM-DD or null",
+      "end_date": "YYYY-MM-DD or null",
+      "payment_terms": "e.g. 'Net 45 days' or null",
+      "location": "e.g. 'onsite/remote' or null"
+    }
+  ],
   "risk_flags": [
     "list of potentially risky or unusual clauses — include section/article reference if available"
   ]
 }
 
 Rules:
-- If a field is not found in the contract, use null.
-- For risk_flags, look for: unlimited liability, automatic renewal, unilateral termination rights, penalty clauses, IP ownership transfers, non-compete clauses, and missing dispute resolution.
+- If orders/appendices are present, populate the orders array. If none found, use empty array [].
+- For top-level fields (contract_value, start_date, end_date, payment_terms), prefer values from the most specific order if the main contract leaves them blank.
+- For risk_flags, look for: unlimited liability, automatic renewal, unilateral termination rights, penalty clauses, IP ownership transfers, non-compete clauses, confidentiality sanctions, and missing dispute resolution.
 - Keep risk_flag descriptions concise — max 1 sentence each.
 - Never add fields that are not in the schema above.
