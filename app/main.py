@@ -43,7 +43,7 @@ def analyze_with_llm(text: str) -> dict:
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text[:24000]},
+                {"role": "user", "content": text},
             ],
         )
         return json.loads(response.choices[0].message.content)
