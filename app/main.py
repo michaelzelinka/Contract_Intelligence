@@ -80,6 +80,20 @@ def get_result(
     return data
 
 
+@app.post("/debug-text")
+async def debug_text(
+    file: UploadFile = File(...),
+    api_key: str = Depends(require_api_key),
+):
+    pdf_bytes = await file.read()
+    text = extract_text_from_pdf(pdf_bytes)
+    return {
+        "total_chars": len(text),
+        "preview_start": text[:500],
+        "preview_end": text[-500:],
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
